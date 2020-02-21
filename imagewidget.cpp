@@ -107,6 +107,7 @@ void ImgWidget::paintEvent(QPaintEvent *)
                 {
                     if(m_filtGTList.contains(i))
                         continue;
+                    p.drawPolygon(m_GTList.at(i));
                 }
                 else
                 {
