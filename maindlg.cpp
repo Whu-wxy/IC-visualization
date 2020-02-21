@@ -332,6 +332,8 @@ void MainDlg::onChooseImgFile()
         processGT();
     if(m_PredDir.length() != 0)
         processPred();
+
+    m_imgLabel->update();
 }
 
 void MainDlg::onChooseGTFile()
@@ -344,6 +346,7 @@ void MainDlg::onChooseGTFile()
     ListSort(1);
 
     processGT();
+    m_imgLabel->update();
 }
 
 void MainDlg::onChoosePredFile()
@@ -356,6 +359,7 @@ void MainDlg::onChoosePredFile()
     ListSort(2);
 
     processPred();
+    m_imgLabel->update();
 }
 
 void MainDlg::onShowGT(int state)
