@@ -34,3 +34,8 @@ RC_ICONS = ImgContrast_ICO.ico
 
 
 CONFIG -= debug_and_release
+
+#RESOURCES += \
+#    qss.qrc
+
+RESOURCES           += other/qss.qrc

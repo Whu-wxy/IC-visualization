@@ -5,6 +5,28 @@ MainDlg::MainDlg(QWidget *parent)
 {
     QWidget::setWindowIcon(QIcon(":/icon.ico"));
 
+    //加载样式表
+    QFile file(":/qss/flatwhite.css");
+    if(file.open(QFile::ReadOnly)) {
+        QString qss = QLatin1String(file.readAll());
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
+
+    initial();
+    setupUI();
+    setupConnection();
+}
+
+MainDlg::~MainDlg()
+{
+
+}
+
+void MainDlg::initial()
+{
     m_curFileName = "";
     m_PredDir = "";
     m_GTDir = "";
@@ -13,7 +35,10 @@ MainDlg::MainDlg(QWidget *parent)
     setWindowFlags(windowFlags()|Qt::WindowMinimizeButtonHint|Qt::WindowMaximizeButtonHint);
 
     setWindowState(Qt::WindowMaximized);
+}
 
+void MainDlg::setupUI()
+{
     m_imgLabel = new ImgWidget(this);
     m_ChooseImgDirBtn = new QPushButton("选择图片文件");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
@@ -31,6 +56,10 @@ MainDlg::MainDlg(QWidget *parent)
     m_UpBtn = new QPushButton("上一个");
     m_DownBtn = new QPushButton("下一个");
     m_SaveBtn = new QPushButton("保存");
+    m_styleBox = new QComboBox(this);
+    m_styleBox->addItem("白色");
+    m_styleBox->addItem("黑色");
+    m_styleBox->addItem("蓝色");
 
     m_imgLabel->setFocusPolicy(Qt::NoFocus);
     m_ChooseImgDirBtn->setFocusPolicy(Qt::NoFocus);
@@ -43,6 +72,7 @@ MainDlg::MainDlg(QWidget *parent)
     m_UpBtn->setFocusPolicy(Qt::NoFocus);
     m_DownBtn->setFocusPolicy(Qt::NoFocus);
     m_SaveBtn->setFocusPolicy(Qt::NoFocus);
+    m_styleBox->setFocusPolicy(Qt::NoFocus);
 
     QGroupBox* groupBox = new QGroupBox(this);
 
@@ -54,6 +84,7 @@ MainDlg::MainDlg(QWidget *parent)
     rightLay->addWidget(m_FiltGTBox);
     rightLay->addWidget(m_ShowPredBox);
     rightLay->addStretch();
+    rightLay->addWidget(m_styleBox);
     rightLay->addWidget(m_SaveBtn);
     rightLay->addStretch();
     rightLay->addWidget(m_numLab);
@@ -67,7 +98,10 @@ MainDlg::MainDlg(QWidget *parent)
     mainLay->addWidget(groupBox);
     mainLay->setStretch(0, 20);
     mainLay->setStretch(1, 1);
+}
 
+void MainDlg::setupConnection()
+{
     connect(m_ChooseImgDirBtn, SIGNAL(clicked()), this, SLOT(onChooseImgFile()));
     connect(m_ChooseGTDirBtn, SIGNAL(clicked()), this, SLOT(onChooseGTFile()));
     connect(m_ChoosePredDirBtn, SIGNAL(clicked()), this, SLOT(onChoosePredFile()));
@@ -77,11 +111,7 @@ MainDlg::MainDlg(QWidget *parent)
     connect(m_SaveBtn, SIGNAL(clicked()), this, SLOT(onSave()));
     connect(m_UpBtn, SIGNAL(clicked()), this, SLOT(onUp()));
     connect(m_DownBtn, SIGNAL(clicked()), this, SLOT(onDown()));
-}
-
-MainDlg::~MainDlg()
-{
-
+    connect(m_styleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChangeStyle(int)));
 }
 
 void MainDlg::keyPressEvent(QKeyEvent *event)
@@ -453,4 +483,22 @@ void MainDlg::onSave()
 
     savePath.mkdir("Contrast_Save");
     m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex);
+}
+
+void MainDlg::onChangeStyle(int index)
+{
+    QFile file;
+    if(index == 0)
+        file.setFileName(":/qss/flatwhite.css");
+    else if(index == 1)
+        file.setFileName(":/qss/psblack.css");
+    else if(index == 2)
+        file.setFileName(":/qss/lightblue.css");
+    if(file.open(QFile::ReadOnly)) {
+        QString qss = QLatin1String(file.readAll());
+        QString paletteColor = qss.mid(20, 7);
+        qApp->setPalette(QPalette(QColor(paletteColor)));
+        qApp->setStyleSheet(qss);
+        file.close();
+    }
 }

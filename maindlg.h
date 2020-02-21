@@ -1,6 +1,7 @@
 #ifndef MAINDLG_H
 #define MAINDLG_H
 
+#include <QApplication>
 #include <QDialog>
 #include <QLabel>
 #include <QPushButton>
@@ -16,6 +17,7 @@
 #include <QFile>
 #include <QPolygon>
 #include <QtAlgorithms>
+#include <QComboBox>
 
 #include <QDebug>
 
@@ -30,6 +32,10 @@ public:
     ~MainDlg();
 
 protected:
+    void    setupUI();
+    void    initial();
+    void    setupConnection();
+
     virtual void keyPressEvent(QKeyEvent *event);
 
     QPolygon    readICLabel(QString);
@@ -51,6 +57,7 @@ private:
     QPushButton*    m_UpBtn;
     QPushButton*    m_DownBtn;
     QPushButton*    m_SaveBtn;
+    QComboBox*      m_styleBox;
 
     int     m_iIndex;
     QString m_curFileName;
@@ -76,6 +83,7 @@ protected slots:
     void    onUp();
     void    onDown();
     void    onSave();
+    void    onChangeStyle(int index);
 
 };
 #endif // MAINDLG_H
