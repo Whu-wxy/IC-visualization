@@ -116,24 +116,57 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
 
 QPolygon MainDlg::readICLabel(QString label)
 {
-    QStringList labelList = label.split(",");
+    QStringList labelList;
     QPolygon polygon;
     QPoint pt;
-    int count = labelList.count();
-    if(labelList.count() > 8)
-        count -= 1;
-    for(int i=0; i<count; i++)
+    int count = 0;
+
+    if(label.contains(","))  //IC15 | IC13-TEST
     {
-        if(i % 2 == 0)
+        labelList = label.split(",");
+
+        count = labelList.count();
+
+        if(labelList.count() > 8)
+            count -= 1;
+        else if(count == 5)
+            count -= 1;
+    }
+    else
+    {
+        labelList = label.split(" ");  //IC13
+        count = labelList.count();
+        if(labelList.count() > 4)
+            count -= 1;
+    }
+
+    if(count == 8)              //IC15
+    {
+        for(int i=0; i<count; i++)
         {
-            pt.setX(labelList.at(i).toInt());
-        }
-        else if(i % 2 == 1)
-        {
-            pt.setY(labelList.at(i).toInt());
-            polygon.append(pt);
+            if(i % 2 == 0)
+            {
+                pt.setX(labelList.at(i).toInt());
+            }
+            else if(i % 2 == 1)
+            {
+                pt.setY(labelList.at(i).toInt());
+                polygon.append(pt);
+            }
         }
     }
+    else if(count == 4)         //IC13
+    {
+        QPoint topLeft, bottomRight;
+        topLeft.setX(labelList.at(0).toInt());
+        topLeft.setY(labelList.at(1).toInt());
+        bottomRight.setX(labelList.at(2).toInt());
+        bottomRight.setY(labelList.at(3).toInt());
+        QRect rect(topLeft,bottomRight);
+        polygon = QPolygon(rect);
+    }
+
+
     return  polygon;
 }
 
