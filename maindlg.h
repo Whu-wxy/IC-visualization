@@ -18,6 +18,7 @@
 #include <QPolygon>
 #include <QtAlgorithms>
 #include <QComboBox>
+#include <QMessageBox>
 
 #include <QDebug>
 

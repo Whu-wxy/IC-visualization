@@ -116,8 +116,6 @@ void MainDlg::setupConnection()
 
 void MainDlg::keyPressEvent(QKeyEvent *event)
 {
-    if(m_curFileName.length() == 0)
-        return QDialog::keyPressEvent(event);
     if(event->key() == Qt::Key_Left || event->key() == Qt::Key_Up)
     {
         onUp();
@@ -126,8 +124,8 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
     {
         onDown();
     }
-    else
-        return QDialog::keyPressEvent(event);
+//    else
+//        return QDialog::keyPressEvent(event);
 
     // 是否按下Ctrl键      特殊按键
     if(event->modifiers() == Qt::ControlModifier)
@@ -487,6 +485,8 @@ void MainDlg::onSave()
 
     savePath.mkdir("Contrast_Save");
     m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex);
+
+    QMessageBox::information(this, "保存图片", "保存成功！");
 }
 
 void MainDlg::onChangeStyle(int index)
