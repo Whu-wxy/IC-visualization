@@ -3,6 +3,8 @@
 MainDlg::MainDlg(QWidget *parent)
     : QDialog(parent)
 {
+    QWidget::setWindowIcon(QIcon(":/icon.ico"));
+
     m_curFileName = "";
     m_PredDir = "";
     m_GTDir = "";
