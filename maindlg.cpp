@@ -12,16 +12,20 @@ MainDlg::MainDlg(QWidget *parent)
 
     setWindowState(Qt::WindowMaximized);
 
-    m_imgLabel = new tiffImg(this);
+    m_imgLabel = new ImgWidget(this);
     m_ChooseImgDirBtn = new QPushButton("选择图片文件");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
+    m_FiltGTBox = new QCheckBox("过滤GT", this);
     m_ShowPredBox = new QCheckBox("显示Pred",this);
     m_ShowGTBox->setChecked(true);
+    m_FiltGTBox->setChecked(false);
     m_ShowPredBox->setChecked(true);
     m_bShowGT = true;
     m_bShowPred = true;
+    m_numLab = new QLabel("0/0", this);
+    m_numLab->setAlignment(Qt::AlignCenter);
     m_UpBtn = new QPushButton("上一个");
     m_DownBtn = new QPushButton("下一个");
     m_SaveBtn = new QPushButton("保存");
@@ -31,7 +35,9 @@ MainDlg::MainDlg(QWidget *parent)
     m_ChooseGTDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ChoosePredDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ShowGTBox->setFocusPolicy(Qt::NoFocus);
+    m_FiltGTBox->setFocusPolicy(Qt::NoFocus);
     m_ShowPredBox->setFocusPolicy(Qt::NoFocus);
+    m_numLab->setFocusPolicy(Qt::NoFocus);
     m_UpBtn->setFocusPolicy(Qt::NoFocus);
     m_DownBtn->setFocusPolicy(Qt::NoFocus);
     m_SaveBtn->setFocusPolicy(Qt::NoFocus);
@@ -43,10 +49,12 @@ MainDlg::MainDlg(QWidget *parent)
     rightLay->addWidget(m_ChooseGTDirBtn);
     rightLay->addWidget(m_ChoosePredDirBtn);
     rightLay->addWidget(m_ShowGTBox);
+    rightLay->addWidget(m_FiltGTBox);
     rightLay->addWidget(m_ShowPredBox);
     rightLay->addStretch();
     rightLay->addWidget(m_SaveBtn);
     rightLay->addStretch();
+    rightLay->addWidget(m_numLab);
     rightLay->addWidget(m_UpBtn);
     rightLay->addWidget(m_DownBtn);
 
@@ -62,6 +70,7 @@ MainDlg::MainDlg(QWidget *parent)
     connect(m_ChooseGTDirBtn, SIGNAL(clicked()), this, SLOT(onChooseGTFile()));
     connect(m_ChoosePredDirBtn, SIGNAL(clicked()), this, SLOT(onChoosePredFile()));
     connect(m_ShowGTBox, SIGNAL(stateChanged(int)), this, SLOT(onShowGT(int)));
+    connect(m_FiltGTBox, SIGNAL(stateChanged(int)), this, SLOT(onFiltGT(int)));
     connect(m_ShowPredBox, SIGNAL(stateChanged(int)), this, SLOT(onShowPred(int)));
     connect(m_SaveBtn, SIGNAL(clicked()), this, SLOT(onSave()));
     connect(m_UpBtn, SIGNAL(clicked()), this, SLOT(onUp()));
@@ -76,7 +85,7 @@ MainDlg::~MainDlg()
 void MainDlg::keyPressEvent(QKeyEvent *event)
 {
     if(m_curFileName.length() == 0)
-        return;
+        return QDialog::keyPressEvent(event);
     if(event->key() == Qt::Key_Left || event->key() == Qt::Key_Up)
     {
         onUp();
@@ -85,6 +94,8 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
     {
         onDown();
     }
+    else
+        return QDialog::keyPressEvent(event);
 
     // 是否按下Ctrl键      特殊按键
     if(event->modifiers() == Qt::ControlModifier)
@@ -94,9 +105,11 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
         {
             onSave();
         }
-
+        else
+            return QDialog::keyPressEvent(event);
     }
-    //else QWidget::keyPressEvent(event);   //保存默认事件
+    else
+        return QDialog::keyPressEvent(event);
 }
 
 QPolygon MainDlg::readICLabel(QString label)
@@ -131,6 +144,7 @@ bool MainDlg::processGT()
         QFile file(m_GTDir+QDir::separator()+m_GTNameList.at(m_iIndex));
         if(file.open(QIODevice::ReadOnly))
         {
+            int i=0;
             while (!file.atEnd())
             {
                 QByteArray line = file.readLine();
@@ -138,7 +152,12 @@ bool MainDlg::processGT()
                 if(!QChar(line.at(0)).isDigit())
                     line = line.remove(0, 3);
                 QPolygon poly = readICLabel(QString(line));
+
+                if(line.endsWith("###"))
+                    m_imgLabel->addFiltGTIndex(i);
+
                 m_imgLabel->addPolygon(poly, true);
+                i++;
             }
             file.close();
             return true;
@@ -178,6 +197,48 @@ bool MainDlg::processPred()
         return false;
 }
 
+void MainDlg::changeNum()
+{
+    QString num = QString("%1/%2").arg(m_iIndex+1).arg(m_fileNameList.count());
+    m_numLab->setText(num);
+}
+
+bool caseInsensitiveLessThan(QString s1, QString s2)
+{
+    QStringList s1List = s1.split("_");
+    QStringList s2List = s2.split("_");
+    s1 = s1List.at(s1List.count()-1);
+    if(s1.endsWith(".jpg"))
+        s1.remove(".jpg");
+    else if(s1.endsWith(".txt"))
+        s1.remove(".txt");
+    s2 = s2List.at(s2List.count()-1);
+    if(s2.endsWith(".jpg"))
+        s2.remove(".jpg");
+    else if(s2.endsWith(".txt"))
+        s2.remove(".txt");
+
+    return s1.toInt() < s2.toInt();
+}
+
+void MainDlg::ListSort(int index)
+{
+    if(index == 0)
+    {
+        std::sort(m_fileNameList.begin(), m_fileNameList.end(), caseInsensitiveLessThan);
+    }
+    else if(index == 1)
+    {
+        std::sort(m_GTNameList.begin(), m_GTNameList.end(), caseInsensitiveLessThan);
+    }
+    else if(index == 2)
+    {
+        std::sort(m_PredNameList.begin(), m_PredNameList.end(), caseInsensitiveLessThan);
+    }
+}
+
+
+
 void MainDlg::onChooseImgFile()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -188,6 +249,7 @@ void MainDlg::onChooseImgFile()
     m_imgFileDir.setPath(info.path());
     m_fileNameList.clear();
     m_fileNameList = m_imgFileDir.entryList(QDir::Files, QDir::Name);
+    ListSort(0);
 
     for(int i=0; i<m_fileNameList.count(); i++)
     {
@@ -199,6 +261,7 @@ void MainDlg::onChooseImgFile()
     }
 
     m_imgLabel->setImage(fileName);
+    changeNum();
 
     if(m_GTDir.length() != 0)
         processGT();
@@ -213,6 +276,7 @@ void MainDlg::onChooseGTFile()
     QDir dir(m_GTDir);
     m_GTNameList.clear();
     m_GTNameList = dir.entryList(QDir::Files, QDir::Name);
+    ListSort(1);
 
     processGT();
 }
@@ -224,6 +288,7 @@ void MainDlg::onChoosePredFile()
     QDir dir(m_PredDir);
     m_PredNameList.clear();
     m_PredNameList = dir.entryList(QDir::Files, QDir::Name);
+    ListSort(2);
 
     processPred();
 }
@@ -234,11 +299,27 @@ void MainDlg::onShowGT(int state)
     {
         m_bShowGT = false;
         m_imgLabel->m_bShowGT = false;
+        m_imgLabel->update();
     }
-    else if(state == 1)
+    else if(state == 2)
     {
         m_bShowGT = true;
         m_imgLabel->m_bShowGT = true;
+        m_imgLabel->update();
+    }
+}
+
+void MainDlg::onFiltGT(int state)
+{
+    if(state == 0)
+    {
+        m_imgLabel->m_bFiltGT = false;
+        m_imgLabel->update();
+    }
+    else if(state == 2)
+    {
+        m_imgLabel->m_bFiltGT = true;
+        m_imgLabel->update();
     }
 }
 
@@ -248,11 +329,13 @@ void MainDlg::onShowPred(int state)
     {
         m_bShowPred = false;
         m_imgLabel->m_bShowPred = false;
+        m_imgLabel->update();
     }
-    else if(state == 1)
+    else if(state == 2)
     {
         m_bShowPred = true;
         m_imgLabel->m_bShowPred = true;
+        m_imgLabel->update();
     }
 }
 
@@ -268,6 +351,8 @@ void MainDlg::onUp()
             if(i > 0)
             {
                 m_iIndex -= 1;
+                changeNum();
+
                 m_curFileName = m_fileNameList.at(i-1);
                 QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
                 if(QFile::exists(filePath))
@@ -301,6 +386,8 @@ void MainDlg::onDown()
             if(m_fileNameList.count() >i)
             {
                 m_iIndex += 1;
+                changeNum();
+
                 m_curFileName = m_fileNameList.at(i+1);
                 QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
                 if(QFile::exists(filePath))
@@ -323,6 +410,12 @@ void MainDlg::onDown()
 
 void MainDlg::onSave()
 {
-    if(m_curFileName.length() == 0)
+    if(m_curFileName.length() == 0 || m_imgFileDir.isEmpty() || !m_imgFileDir.exists())
         return;
+
+    QDir savePath = m_imgFileDir;
+    savePath.cdUp();
+
+    savePath.mkdir("Contrast_Save");
+    m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex);
 }

@@ -15,10 +15,11 @@
 #include <QDir>
 #include <QFile>
 #include <QPolygon>
+#include <QtAlgorithms>
 
 #include <QDebug>
 
-#include "tiffimg.h"
+#include "imagewidget.h"
 
 class MainDlg : public QDialog
 {
@@ -35,14 +36,18 @@ protected:
 
     bool    processGT();
     bool    processPred();
+    void    changeNum();
+    void    ListSort(int);
 
 private:
-    tiffImg*        m_imgLabel;
+    ImgWidget*      m_imgLabel;
     QPushButton*    m_ChooseImgDirBtn;
     QPushButton*    m_ChooseGTDirBtn;
     QPushButton*    m_ChoosePredDirBtn;
     QCheckBox*      m_ShowGTBox;
+    QCheckBox*      m_FiltGTBox;
     QCheckBox*      m_ShowPredBox;
+    QLabel*         m_numLab;
     QPushButton*    m_UpBtn;
     QPushButton*    m_DownBtn;
     QPushButton*    m_SaveBtn;
@@ -66,6 +71,7 @@ protected slots:
     void    onChooseGTFile();
     void    onChoosePredFile();
     void    onShowGT(int);
+    void    onFiltGT(int);
     void    onShowPred(int);
     void    onUp();
     void    onDown();
