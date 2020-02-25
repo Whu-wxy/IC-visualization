@@ -340,11 +340,20 @@ void MainDlg::onChooseGTFile()
 
     QDir dir(m_GTDir);
     m_GTNameList.clear();
-    m_GTNameList = dir.entryList(QDir::Files, QDir::Name);
+    QStringList nameFilters;
+    nameFilters<<"*.txt";
+    m_GTNameList = dir.entryList(nameFilters, QDir::Files, QDir::Name);
+    if(m_GTNameList.count() == 0)
+    {
+        QMessageBox::critical(this, "选择GT路径", "请选择正确的GT路径");
+        return;
+    }
     ListSort(1);
 
     processGT();
     m_imgLabel->update();
+
+    countInterSection(m_GTDir, false);
 }
 
 void MainDlg::onChoosePredFile()
@@ -353,7 +362,14 @@ void MainDlg::onChoosePredFile()
 
     QDir dir(m_PredDir);
     m_PredNameList.clear();
-    m_PredNameList = dir.entryList(QDir::Files, QDir::Name);
+    QStringList nameFilters;
+    nameFilters<<"*.txt";
+    m_PredNameList = dir.entryList(nameFilters, QDir::Files, QDir::Name);
+    if(m_PredNameList.count() == 0)
+    {
+        QMessageBox::critical(this, "选择Pred路径", "请选择正确的Pred路径");
+        return;
+    }
     ListSort(2);
 
     processPred();
@@ -450,7 +466,7 @@ void MainDlg::onDown()
     {
         if(m_fileNameList.at(i) == m_curFileName)
         {
-            if(m_fileNameList.count() >i)
+            if(m_fileNameList.count()-1 > i)
             {
                 m_iIndex += 1;
                 changeNum();

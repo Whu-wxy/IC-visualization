@@ -23,6 +23,7 @@
 #include <QDebug>
 
 #include "imagewidget.h"
+#include "utils.h"
 
 class MainDlg : public QDialog
 {
