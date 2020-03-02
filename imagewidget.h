@@ -25,6 +25,8 @@ public:
 
     void    setImage(QString filePath);
     void    addPolygon(QPolygon, bool bGT);
+    void    calInterPoly();
+    void    showInterPoly(int);
     void    addFiltGTIndex(int index);
     bool    bGTLoad(){if(m_GTList.count()!=0) return true;
                         else return false; }
@@ -34,6 +36,7 @@ public:
     void    saveResult(QString path, int index);
 
     bool    m_bShowGT;
+    bool    m_bShowInter;
     bool    m_bFiltGT;
     bool    m_bShowPred;
 
@@ -44,6 +47,7 @@ private:
 
 
     QList<QPolygon> m_GTList;
+    QList<QPolygon> m_GTInterList;
     QList<int>      m_filtGTList;
     QList<QPolygon> m_PredList;
 

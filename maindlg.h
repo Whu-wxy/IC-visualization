@@ -53,6 +53,7 @@ private:
     QPushButton*    m_ChooseGTDirBtn;
     QPushButton*    m_ChoosePredDirBtn;
     QCheckBox*      m_ShowGTBox;
+    QCheckBox*      m_markInterBox;
     QCheckBox*      m_FiltGTBox;
     QCheckBox*      m_ShowPredBox;
     QLabel*         m_numLab;
@@ -80,6 +81,7 @@ protected slots:
     void    onChooseGTFile();
     void    onChoosePredFile();
     void    onShowGT(int);
+    void    onShowInter(int);
     void    onFiltGT(int);
     void    onShowPred(int);
     void    onUp();

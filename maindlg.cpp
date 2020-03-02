@@ -44,9 +44,11 @@ void MainDlg::setupUI()
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
+    m_markInterBox = new QCheckBox("标出标签交叉区域", this);
     m_FiltGTBox = new QCheckBox("过滤GT", this);
     m_ShowPredBox = new QCheckBox("显示Pred",this);
     m_ShowGTBox->setChecked(true);
+    m_markInterBox->setChecked(true);
     m_FiltGTBox->setChecked(false);
     m_ShowPredBox->setChecked(true);
     m_bShowGT = true;
@@ -66,6 +68,7 @@ void MainDlg::setupUI()
     m_ChooseGTDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ChoosePredDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ShowGTBox->setFocusPolicy(Qt::NoFocus);
+    m_markInterBox->setFocusPolicy(Qt::NoFocus);
     m_FiltGTBox->setFocusPolicy(Qt::NoFocus);
     m_ShowPredBox->setFocusPolicy(Qt::NoFocus);
     m_numLab->setFocusPolicy(Qt::NoFocus);
@@ -81,6 +84,7 @@ void MainDlg::setupUI()
     rightLay->addWidget(m_ChooseGTDirBtn);
     rightLay->addWidget(m_ChoosePredDirBtn);
     rightLay->addWidget(m_ShowGTBox);
+    rightLay->addWidget(m_markInterBox);
     rightLay->addWidget(m_FiltGTBox);
     rightLay->addWidget(m_ShowPredBox);
     rightLay->addStretch();
@@ -106,6 +110,7 @@ void MainDlg::setupConnection()
     connect(m_ChooseGTDirBtn, SIGNAL(clicked()), this, SLOT(onChooseGTFile()));
     connect(m_ChoosePredDirBtn, SIGNAL(clicked()), this, SLOT(onChoosePredFile()));
     connect(m_ShowGTBox, SIGNAL(stateChanged(int)), this, SLOT(onShowGT(int)));
+    connect(m_markInterBox, SIGNAL(stateChanged(int)), this, SLOT(onShowInter(int)));
     connect(m_FiltGTBox, SIGNAL(stateChanged(int)), this, SLOT(onFiltGT(int)));
     connect(m_ShowPredBox, SIGNAL(stateChanged(int)), this, SLOT(onShowPred(int)));
     connect(m_SaveBtn, SIGNAL(clicked()), this, SLOT(onSave()));
@@ -223,6 +228,8 @@ bool MainDlg::processGT()
                 i++;
             }
             file.close();
+
+            m_imgLabel->calInterPoly();
             return true;
         }
         else
@@ -393,6 +400,11 @@ void MainDlg::onShowGT(int state)
     }
 }
 
+void MainDlg::onShowInter(int state)
+{
+    m_imgLabel->showInterPoly(state);
+}
+
 void MainDlg::onFiltGT(int state)
 {
     if(state == 0)
@@ -501,7 +513,7 @@ void MainDlg::onSave()
     savePath.cdUp();
 
     savePath.mkdir("Contrast_Save");
-    m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex);
+    m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex+1);
 
     QMessageBox::information(this, "保存图片", "保存成功！");
 }

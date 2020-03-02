@@ -8,6 +8,7 @@ ImgWidget::ImgWidget(QWidget *parent,QString path)
     basemap = NULL;
 
     m_bShowGT = true;
+    m_bShowInter = true;
     m_bFiltGT = false;
     m_bShowPred = true;
 
@@ -33,6 +34,7 @@ void ImgWidget::setImage(QString filePath)
         return;
 
     m_GTList.clear();
+    m_GTInterList.clear();
     m_filtGTList.clear();
     m_PredList.clear();
 
@@ -61,6 +63,34 @@ void ImgWidget::addPolygon(QPolygon poly, bool bGT)
     else
     {
         m_PredList.append(poly);
+    }
+}
+
+void ImgWidget::calInterPoly()
+{
+    for(int i=0; i<m_GTList.count(); i++)
+    {
+        QPolygon poly1 = m_GTList.at(i);
+        for(int j=i+1; j<m_GTList.count(); j++)
+        {
+            QPolygon poly2 = m_GTList.at(j);
+            if(poly1.intersects(poly2))
+                m_GTInterList.append(poly1.intersected(poly2));
+        }
+    }
+}
+
+void ImgWidget::showInterPoly(int state)
+{
+    if(state == 0)
+    {
+        m_bShowInter = false;
+        update();
+    }
+    else if(state == 2)
+    {
+        m_bShowInter = true;
+        update();
     }
 }
 
@@ -103,7 +133,7 @@ void ImgWidget::paintEvent(QPaintEvent *)
         {
             for(int i=0; i<m_GTList.count(); i++)
             {
-                if(m_bFiltGT)
+                if(m_bFiltGT)  //过滤###的文本区域
                 {
                     if(m_filtGTList.contains(i))
                         continue;
@@ -126,9 +156,24 @@ void ImgWidget::paintEvent(QPaintEvent *)
 
             }
         }
+        //GT的交叉区域
+        if(m_bShowInter)
+        {
+            QPen interPen;
+            interPen.setColor(QColor(Qt::blue));
+            interPen.setWidth(3);
+            p.setPen(interPen);
+            for(int i=0; i<m_GTInterList.count(); i++)
+            {
+                p.drawPolygon(m_GTInterList.at(i));
+            }
+            p.setPen(newPen);
+        }
 
         newPen.setColor(QColor(Qt::red));
         p.setPen(newPen);
+
+        //prediction区域
         if(m_bShowPred)
         {
             for(int i=0; i<m_PredList.count(); i++)
