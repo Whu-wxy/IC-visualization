@@ -11,6 +11,7 @@
 #include <QGroupBox>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDir>
@@ -19,6 +20,7 @@
 #include <QtAlgorithms>
 #include <QComboBox>
 #include <QMessageBox>
+#include <QLineEdit>
 
 #include <QDebug>
 
@@ -39,6 +41,7 @@ protected:
     void    setupConnection();
 
     virtual void keyPressEvent(QKeyEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event);
 
     QPolygon    readICLabel(QString);
 
@@ -56,6 +59,9 @@ private:
     QCheckBox*      m_markInterBox;
     QCheckBox*      m_FiltGTBox;
     QCheckBox*      m_ShowPredBox;
+
+    QLineEdit*      m_pageEdit;
+    QPushButton*    m_pageBtn;
     QLabel*         m_numLab;
     QPushButton*    m_UpBtn;
     QPushButton*    m_DownBtn;
@@ -84,6 +90,7 @@ protected slots:
     void    onShowInter(int);
     void    onFiltGT(int);
     void    onShowPred(int);
+    void    onChangePage();
     void    onUp();
     void    onDown();
     void    onSave();

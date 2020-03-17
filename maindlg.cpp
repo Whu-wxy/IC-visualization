@@ -53,6 +53,10 @@ void MainDlg::setupUI()
     m_ShowPredBox->setChecked(true);
     m_bShowGT = true;
     m_bShowPred = true;
+
+    m_pageEdit = new QLineEdit(this);
+    m_pageEdit->setPlaceholderText("输入页码跳转");
+    m_pageBtn = new QPushButton("跳转", this);
     m_numLab = new QLabel("0/0", this);
     m_numLab->setAlignment(Qt::AlignCenter);
     m_UpBtn = new QPushButton("上一个");
@@ -63,6 +67,8 @@ void MainDlg::setupUI()
     m_styleBox->addItem("黑色");
     m_styleBox->addItem("蓝色");
 
+    m_pageEdit->setFocusPolicy(Qt::ClickFocus);
+    m_pageBtn->setFocusPolicy(Qt::NoFocus);
     m_imgLabel->setFocusPolicy(Qt::NoFocus);
     m_ChooseImgDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ChooseGTDirBtn->setFocusPolicy(Qt::NoFocus);
@@ -91,6 +97,8 @@ void MainDlg::setupUI()
     rightLay->addWidget(m_styleBox);
     rightLay->addWidget(m_SaveBtn);
     rightLay->addStretch();
+    rightLay->addWidget(m_pageEdit);
+    rightLay->addWidget(m_pageBtn);
     rightLay->addWidget(m_numLab);
     rightLay->addWidget(m_UpBtn);
     rightLay->addWidget(m_DownBtn);
@@ -117,6 +125,7 @@ void MainDlg::setupConnection()
     connect(m_UpBtn, SIGNAL(clicked()), this, SLOT(onUp()));
     connect(m_DownBtn, SIGNAL(clicked()), this, SLOT(onDown()));
     connect(m_styleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onChangeStyle(int)));
+    connect(m_pageBtn, SIGNAL(clicked()), this, SLOT(onChangePage()));
 }
 
 void MainDlg::keyPressEvent(QKeyEvent *event)
@@ -129,8 +138,8 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
     {
         onDown();
     }
-//    else
-//        return QDialog::keyPressEvent(event);
+    //    else
+    //        return QDialog::keyPressEvent(event);
 
     // 是否按下Ctrl键      特殊按键
     if(event->modifiers() == Qt::ControlModifier)
@@ -145,6 +154,11 @@ void MainDlg::keyPressEvent(QKeyEvent *event)
     }
     else
         return QDialog::keyPressEvent(event);
+}
+
+void MainDlg::mousePressEvent(QMouseEvent *event)
+{
+    this->setFocus();
 }
 
 QPolygon MainDlg::readICLabel(QString label)
@@ -450,25 +464,33 @@ void MainDlg::onUp()
                 changeNum();
 
                 m_curFileName = m_fileNameList.at(i-1);
-                QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
-                if(QFile::exists(filePath))
-                    m_imgLabel->setImage(filePath);
-
-                if(m_bShowGT)
-                {
-                    processGT();
-                }
-                if(m_bShowPred)
-                {
-                    processPred();
-                }
-
-                return;
             }
+            else if(i == 0)
+            {
+                m_iIndex = m_fileNameList.count()-1;
+                changeNum();
+                m_curFileName = m_fileNameList.at(m_fileNameList.count()-1);
+            }
+            else
+                return;
+            QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
+            if(QFile::exists(filePath))
+                m_imgLabel->setImage(filePath);
+
+            if(m_bShowGT)
+            {
+                processGT();
+            }
+            if(m_bShowPred)
+            {
+                processPred();
+            }
+
+            return;
         }
     }
-
 }
+
 
 void MainDlg::onDown()
 {
@@ -483,26 +505,35 @@ void MainDlg::onDown()
             {
                 m_iIndex += 1;
                 changeNum();
-
                 m_curFileName = m_fileNameList.at(i+1);
-                QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
-                if(QFile::exists(filePath))
-                    m_imgLabel->setImage(filePath);
-
-                if(m_bShowGT)
-                {
-                    processGT();
-                }
-                if(m_bShowPred)
-                {
-                    processPred();
-                }
-
-                return;
             }
+            else if(i == m_fileNameList.count()-1)
+            {
+                m_iIndex = 0;
+                changeNum();
+                m_curFileName = m_fileNameList.at(0);
+            }
+            else
+                return;
+
+            QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
+            if(QFile::exists(filePath))
+                m_imgLabel->setImage(filePath);
+
+            if(m_bShowGT)
+            {
+                processGT();
+            }
+            if(m_bShowPred)
+            {
+                processPred();
+            }
+
+            return;
         }
     }
 }
+
 
 void MainDlg::onSave()
 {
@@ -533,5 +564,31 @@ void MainDlg::onChangeStyle(int index)
         qApp->setPalette(QPalette(QColor(paletteColor)));
         qApp->setStyleSheet(qss);
         file.close();
+    }
+}
+
+
+void MainDlg::onChangePage()
+{
+    this->setFocus();
+    if(m_curFileName.length() == 0)
+        return;
+
+    int newPage = m_pageEdit->text().toInt();
+    m_iIndex = newPage-1;
+    changeNum();
+    m_curFileName = m_fileNameList.at(m_iIndex);
+
+    QString filePath = m_imgFileDir.path()+QDir::separator()+m_curFileName;
+    if(QFile::exists(filePath))
+        m_imgLabel->setImage(filePath);
+
+    if(m_bShowGT)
+    {
+        processGT();
+    }
+    if(m_bShowPred)
+    {
+        processPred();
     }
 }
