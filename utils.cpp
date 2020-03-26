@@ -21,14 +21,85 @@ bool sortFileName(QString s1, QString s2)
 void    countInterSection(QString GTDir, bool filtInvalid)
 {
     QDir dir(GTDir);
+    if(!dir.exists())
+        return;
     QStringList GTNameList;
     GTNameList = dir.entryList(QDir::Files, QDir::Name);
+
+    if(GTNameList.count() == 0)
+        return;
 
     std::sort(GTNameList.begin(), GTNameList.end(), sortFileName);
 
     if(dir.isEmpty())
         return;
+
+
+    int allCount = 0;
+    int labCount = 0;
+    for(int i=0; i<GTNameList.count(); i++)
+    {
+        QList<QPolygon> polyList;
+        int count = 0;
+
+        QFile file(dir.path()+QDir::separator()+GTNameList.at(i));
+        //read labels
+        if(file.open(QIODevice::ReadOnly))
+        {
+            while (!file.atEnd())
+            {
+                QByteArray line = file.readLine();
+                line = line.simplified();
+                if(!QChar(line.at(0)).isDigit())
+                    line = line.remove(0, 3);
+
+                if(filtInvalid)
+                    if(line.endsWith("###"))
+                        continue;
+
+                QPolygon poly = readICLabel(QString(line));
+                polyList.append(poly);
+            }
+            file.close();
+        }
+
+        // count intersection boxes
+        for(int j=0; j<polyList.count(); j++)
+        {
+            QPolygon poly1 = polyList.at(j);
+            for(int k=0; k<polyList.count(); k++)
+            {
+                if(k == j)
+                    continue;
+                QPolygon poly2 = polyList.at(k);
+                if(poly1.intersects(poly2))
+                {
+                    count++;
+                    break;
+                }
+            }
+        }
+        //
+     //   qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
+        labCount = polyList.count() + labCount;
+        allCount = allCount+count;
+    }
+    qDebug()<<"intersection boxes Count"<<":"<<allCount<<"/"<<labCount;
+}
+
+void    countVertival(QString GTDir, bool filtInvalid)
+{
+    QDir dir(GTDir);
+    if(!dir.exists())
+        return;
+    QStringList GTNameList;
+    GTNameList = dir.entryList(QDir::Files, QDir::Name);
     if(GTNameList.count() == 0)
+        return;
+
+    std::sort(GTNameList.begin(), GTNameList.end(), sortFileName);
+
+    if(dir.isEmpty())
         return;
 
     int allCount = 0;
@@ -59,28 +130,25 @@ void    countInterSection(QString GTDir, bool filtInvalid)
             file.close();
         }
 
-        // count intersection count
+        // count vertical boxes
         for(int j=0; j<polyList.count(); j++)
         {
-            QPolygon poly1 = polyList.at(j);
-            for(int k=0; k<polyList.count(); k++)
-            {
-                if(k == j)
-                    continue;
-                QPolygon poly2 = polyList.at(k);
-                if(poly1.intersects(poly2))
-                {
-                    count++;
-                    break;
-                }
-            }
+            QPolygon poly = polyList.at(j);
+            QPoint leftTop = poly.at(0);
+            QPoint rightTop = poly.at(1);
+            QPoint leftBot = poly.at(3);
+
+            float lengthH = sqrt(pow(leftTop.x()-rightTop.x(), 2)+pow(leftTop.y()-rightTop.y(), 2));
+            float lengthV = sqrt(pow(leftTop.x()-leftBot.x(), 2)+pow(leftTop.y()-leftBot.y(), 2));
+            if(lengthV > lengthH*2)
+                count++;
         }
         //
-     //   qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
+        qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
         labCount = polyList.count() + labCount;
         allCount = allCount+count;
     }
-    qDebug()<<"allCount"<<":"<<allCount<<"/"<<labCount;
+    qDebug()<<"vertical boxes Count"<<":"<<allCount<<"/"<<labCount;
 }
 
 QPolygon readICLabel(QString label)
@@ -134,7 +202,6 @@ QPolygon readICLabel(QString label)
         QRect rect(topLeft,bottomRight);
         polygon = QPolygon(rect);
     }
-
 
     return  polygon;
 }

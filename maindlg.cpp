@@ -374,8 +374,7 @@ void MainDlg::onChooseGTFile()
     processGT();
     m_imgLabel->update();
 
-    //
-    countInterSection(m_GTDir, false);
+
 }
 
 void MainDlg::onChoosePredFile()

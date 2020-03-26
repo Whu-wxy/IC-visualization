@@ -7,10 +7,13 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
+#include <math.h>
 
-void    countInterSection(QString GTDir, bool filtInvalid);
+void    countInterSection(QString GTDir, bool filtInvalid);   //统计有交集框的数量
 
-QPolygon readICLabel(QString label);
+void    countVertival(QString GTDir, bool filtInvalid);   //统计竖直文本数量
+
+QPolygon readICLabel(QString label);   //读取ICDAR标签
 
 
 #endif // UTILS_H

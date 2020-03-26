@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QStyleFactory>
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,5 +11,11 @@ int main(int argc, char *argv[])
 
     MainDlg w;
     w.show();
+
+    //
+    //countInterSection("", false);
+    //
+    //countVertival("F:\\zzxs\\Experiments\\dl-data\\ICDAR\\ICDAR2015\\test\\gt", false);
+
     return a.exec();
 }
