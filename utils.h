@@ -13,7 +13,9 @@ void    countInterSection(QString GTDir, bool filtInvalid);   //统计有交集�
 
 void    countVertival(QString GTDir, bool filtInvalid);   //统计竖直文本数量
 
-QPolygon readICLabel(QString label);   //读取ICDAR标签
+QPolygon readICLabel(QString label);   //读取ICDAR13/15标签
+
+QPolygon readCTWTXTLabel(QString label);  //CTW-Recognition Annotation-14个点
 
 
 #endif // UTILS_H

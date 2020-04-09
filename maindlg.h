@@ -43,8 +43,6 @@ protected:
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
 
-    QPolygon    readICLabel(QString);
-
     bool    processGT();
     bool    processPred();
     void    changeNum();
@@ -55,6 +53,7 @@ private:
     QPushButton*    m_ChooseImgDirBtn;
     QPushButton*    m_ChooseGTDirBtn;
     QPushButton*    m_ChoosePredDirBtn;
+    QComboBox*      m_dataTypeBox;
     QCheckBox*      m_ShowGTBox;
     QCheckBox*      m_markInterBox;
     QCheckBox*      m_FiltGTBox;

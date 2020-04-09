@@ -41,6 +41,9 @@ void MainDlg::setupUI()
 {
     m_imgLabel = new ImgWidget(this);
     m_ChooseImgDirBtn = new QPushButton("选择图片文件");
+    m_dataTypeBox = new QComboBox(this);
+    m_dataTypeBox->addItem("IC15/13");
+    m_dataTypeBox->addItem("CTW");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
@@ -73,6 +76,7 @@ void MainDlg::setupUI()
     m_ChooseImgDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ChooseGTDirBtn->setFocusPolicy(Qt::NoFocus);
     m_ChoosePredDirBtn->setFocusPolicy(Qt::NoFocus);
+    m_dataTypeBox->setFocusPolicy(Qt::NoFocus);
     m_ShowGTBox->setFocusPolicy(Qt::NoFocus);
     m_markInterBox->setFocusPolicy(Qt::NoFocus);
     m_FiltGTBox->setFocusPolicy(Qt::NoFocus);
@@ -87,6 +91,7 @@ void MainDlg::setupUI()
 
     QVBoxLayout* rightLay = new QVBoxLayout;
     rightLay->addWidget(m_ChooseImgDirBtn);
+    rightLay->addWidget(m_dataTypeBox);
     rightLay->addWidget(m_ChooseGTDirBtn);
     rightLay->addWidget(m_ChoosePredDirBtn);
     rightLay->addWidget(m_ShowGTBox);
@@ -161,66 +166,13 @@ void MainDlg::mousePressEvent(QMouseEvent *event)
     this->setFocus();
 }
 
-QPolygon MainDlg::readICLabel(QString label)
-{
-    QStringList labelList;
-    QPolygon polygon;
-    QPoint pt;
-    int count = 0;
-
-    if(label.contains(","))  //IC15 | IC13-TEST
-    {
-        labelList = label.split(",");
-
-        count = labelList.count();
-
-        if(labelList.count() > 8)
-            count -= 1;
-        else if(count == 5)
-            count -= 1;
-    }
-    else
-    {
-        labelList = label.split(" ");  //IC13
-        count = labelList.count();
-        if(labelList.count() > 4)
-            count -= 1;
-    }
-
-    if(count == 8)              //IC15
-    {
-        for(int i=0; i<count; i++)
-        {
-            if(i % 2 == 0)
-            {
-                pt.setX(labelList.at(i).toInt());
-            }
-            else if(i % 2 == 1)
-            {
-                pt.setY(labelList.at(i).toInt());
-                polygon.append(pt);
-            }
-        }
-    }
-    else if(count == 4)         //IC13
-    {
-        QPoint topLeft, bottomRight;
-        topLeft.setX(labelList.at(0).toInt());
-        topLeft.setY(labelList.at(1).toInt());
-        bottomRight.setX(labelList.at(2).toInt());
-        bottomRight.setY(labelList.at(3).toInt());
-        QRect rect(topLeft,bottomRight);
-        polygon = QPolygon(rect);
-    }
-
-
-    return  polygon;
-}
 
 bool MainDlg::processGT()
 {
     if(m_GTDir.length() == 0)
         return false;
+
+    int dataType = m_dataTypeBox->currentIndex();
     if(m_iIndex < m_GTNameList.count() && m_iIndex >= 0)
     {
         QFile file(m_GTDir+QDir::separator()+m_GTNameList.at(m_iIndex));
@@ -231,11 +183,30 @@ bool MainDlg::processGT()
             {
                 QByteArray line = file.readLine();
                 line = line.simplified();
-                if(!QChar(line.at(0)).isDigit())
+                if(!QChar(line.at(0)).isDigit())    // remove \xef\xbb\xbf
                     line = line.remove(0, 3);
-                QPolygon poly = readICLabel(QString(line));
 
-                if(line.endsWith("###"))
+                QPolygon poly;
+                if(dataType == 0)
+                {
+                    if(line.count(",")>10)
+                    {
+                        QMessageBox::critical(this, "读取GT标签", "请选择正确的IC15/13的GT路径");
+                        return false;
+                    }
+                    poly = readICLabel(QString(line));
+                }
+                else if(dataType == 1)
+                {
+                    if(line.count(",")<10)
+                    {
+                        QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
+                        return false;
+                    }
+                    poly = readCTWTXTLabel(QString(line));
+                }
+
+                if(line.endsWith("###") || line.endsWith("\"###\""))
                     m_imgLabel->addFiltGTIndex(i);
 
                 m_imgLabel->addPolygon(poly, true);
@@ -257,6 +228,7 @@ bool MainDlg::processPred()
 {
     if(m_PredDir.length() == 0)
         return false;
+    int dataType = m_dataTypeBox->currentIndex();
     if(m_iIndex < m_PredNameList.count() && m_iIndex >= 0)
     {
         QFile file(m_PredDir+QDir::separator()+m_PredNameList.at(m_iIndex));
@@ -268,7 +240,25 @@ bool MainDlg::processPred()
                 line = line.simplified();
                 if(!QChar(line.at(0)).isDigit())
                     line = line.remove(0, 3);
-                QPolygon poly = readICLabel(QString(line));
+                QPolygon poly;
+                if(dataType == 0)
+                {
+                    if(line.count(",")>10)
+                    {
+                        QMessageBox::critical(this, "读取Pred标签", "请选择正确的IC15/13的Pred路径");
+                        return false;
+                    }
+                    poly = readICLabel(QString(line));
+                }
+                else if(dataType == 1)
+                {
+                    if(line.count(",")<10)
+                    {
+                        QMessageBox::critical(this, "读取Pred标签", "请选择正确的CTW的Pred路径");
+                        return false;
+                    }
+                    poly = readCTWTXTLabel(QString(line));
+                }
                 m_imgLabel->addPolygon(poly, false);
             }
             file.close();
@@ -357,7 +347,9 @@ void MainDlg::onChooseImgFile()
 
 void MainDlg::onChooseGTFile()
 {
-    m_GTDir = QFileDialog::getExistingDirectory(this, tr("选择GT文件路径"),"/");
+    m_GTDir = QFileDialog::getExistingDirectory(this, tr("选择GT文件路径"),"/",QFileDialog::ShowDirsOnly);
+    if(m_GTDir.length() == 0)
+        return;
 
     QDir dir(m_GTDir);
     m_GTNameList.clear();
@@ -373,13 +365,13 @@ void MainDlg::onChooseGTFile()
 
     processGT();
     m_imgLabel->update();
-
-
 }
 
 void MainDlg::onChoosePredFile()
 {
     m_PredDir = QFileDialog::getExistingDirectory(this, tr("选择Pred文件路径"),"/");
+    if(m_PredDir.length() == 0)
+        return;
 
     QDir dir(m_PredDir);
     m_PredNameList.clear();
@@ -545,7 +537,7 @@ void MainDlg::onSave()
     savePath.mkdir("Contrast_Save");
     m_imgLabel->saveResult(savePath.path()+QDir::separator()+"Contrast_Save", m_iIndex+1);
 
-    QMessageBox::information(this, "保存图片", "保存成功！");
+    QMessageBox::information(this, "保存图片", "保存成功，保存于当前图片的上一级目录\"Contrast_save\"！");
 }
 
 void MainDlg::onChangeStyle(int index)

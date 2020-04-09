@@ -80,7 +80,7 @@ void    countInterSection(QString GTDir, bool filtInvalid)
             }
         }
         //
-     //   qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
+        //   qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
         labCount = polyList.count() + labCount;
         allCount = allCount+count;
     }
@@ -201,6 +201,41 @@ QPolygon readICLabel(QString label)
         bottomRight.setY(labelList.at(3).toInt());
         QRect rect(topLeft,bottomRight);
         polygon = QPolygon(rect);
+    }
+
+    return  polygon;
+}
+
+
+QPolygon readCTWTXTLabel(QString label)
+{
+    QStringList labelList;
+    QPolygon polygon;
+    QPoint pt;
+    int count = 0;
+
+    if(!label.contains(","))  //IC15 | IC13-TEST
+        return polygon;
+    labelList = label.split(",");
+
+    count = labelList.count();
+
+    if(labelList.count() > 32)
+        count -= 1;
+
+    int minX = labelList.at(0).toInt();
+    int minY = labelList.at(1).toInt();
+    for(int i=4; i<count; i++)
+    {
+        if(i % 2 == 0)
+        {
+            pt.setX(minX+labelList.at(i).toInt());
+        }
+        else if(i % 2 == 1)
+        {
+            pt.setY(minY+labelList.at(i).toInt());
+            polygon.append(pt);
+        }
     }
 
     return  polygon;
