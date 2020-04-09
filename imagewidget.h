@@ -15,6 +15,9 @@
 
 #include <QPixmap>
 
+#include <iostream>
+using namespace std;
+
 class ImgWidget : public QWidget
 {
     Q_OBJECT

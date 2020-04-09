@@ -214,7 +214,7 @@ QPolygon readCTWTXTLabel(QString label)
     QPoint pt;
     int count = 0;
 
-    if(!label.contains(","))  //IC15 | IC13-TEST
+    if(!label.contains(","))
         return polygon;
     labelList = label.split(",");
 
@@ -234,6 +234,35 @@ QPolygon readCTWTXTLabel(QString label)
         else if(i % 2 == 1)
         {
             pt.setY(minY+labelList.at(i).toInt());
+            polygon.append(pt);
+        }
+    }
+
+    return  polygon;
+}
+
+QPolygon readTotalText2ICLabel(QString label)
+{
+    QStringList labelList;
+    QPolygon polygon;
+    QPoint pt;
+    int count = 0;
+
+    if(!label.contains(","))
+        return polygon;
+    labelList = label.split(",");
+
+    count = labelList.count();
+
+    for(int i=0; i<count; i++)
+    {
+        if(i % 2 == 0)
+        {
+            pt.setX(labelList.at(i).toInt());
+        }
+        else if(i % 2 == 1)
+        {
+            pt.setY(labelList.at(i).toInt());
             polygon.append(pt);
         }
     }

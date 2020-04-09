@@ -185,7 +185,8 @@ void ImgWidget::paintEvent(QPaintEvent *)
     }
 
     QPainter basePainter(this);
-    basePainter.drawPixmap(0,0,*basemap);
+    QPixmap basemapScale = basemap->scaled(this->width(), this->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    basePainter.drawPixmap(0,0,basemapScale);
 }
 
 void ImgWidget::resizeEvent(QResizeEvent* e)

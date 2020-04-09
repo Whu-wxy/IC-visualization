@@ -17,5 +17,6 @@ QPolygon readICLabel(QString label);   //读取ICDAR13/15标签
 
 QPolygon readCTWTXTLabel(QString label);  //CTW-Recognition Annotation-14个点
 
+QPolygon readTotalText2ICLabel(QString label);   //读取Total-Text转成IC15形式的标签
 
 #endif // UTILS_H

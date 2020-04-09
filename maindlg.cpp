@@ -44,6 +44,7 @@ void MainDlg::setupUI()
     m_dataTypeBox = new QComboBox(this);
     m_dataTypeBox->addItem("IC15/13");
     m_dataTypeBox->addItem("CTW");
+    m_dataTypeBox->addItem("TotalText");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
@@ -205,6 +206,10 @@ bool MainDlg::processGT()
                     }
                     poly = readCTWTXTLabel(QString(line));
                 }
+                else if(dataType == 2)
+                {
+                    poly = readTotalText2ICLabel(QString(line));
+                }
 
                 if(line.endsWith("###") || line.endsWith("\"###\""))
                     m_imgLabel->addFiltGTIndex(i);
@@ -259,6 +264,11 @@ bool MainDlg::processPred()
                     }
                     poly = readCTWTXTLabel(QString(line));
                 }
+                else if(dataType == 2)
+                {
+                    poly = readTotalText2ICLabel(QString(line));
+                }
+
                 m_imgLabel->addPolygon(poly, false);
             }
             file.close();
