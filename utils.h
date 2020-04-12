@@ -16,6 +16,7 @@ void    countVertival(QString GTDir, bool filtInvalid);   //统计竖直文本�
 QPolygon readICLabel(QString label);   //读取ICDAR13/15标签
 
 QPolygon readCTWTXTLabel(QString label);  //CTW-Recognition Annotation-14个点
+QPolygon readCTWTXTE2ELabel(QString label);  //CTW-Recognition Annotation-14个点
 
 QPolygon readTotalText2ICLabel(QString label);   //读取Total-Text转成IC15形式的标签
 

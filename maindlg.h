@@ -43,8 +43,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
 
-    bool    processGT();
-    bool    processPred();
+    bool    processGT(bool newDir);
+    bool    processPred(bool newDir);
     void    changeNum();
     void    ListSort(int);
 

@@ -168,10 +168,13 @@ void MainDlg::mousePressEvent(QMouseEvent *event)
 }
 
 
-bool MainDlg::processGT()
+bool MainDlg::processGT(bool newDir)
 {
     if(m_GTDir.length() == 0)
         return false;
+
+    if(newDir)
+        m_imgLabel->clearGTList();
 
     int dataType = m_dataTypeBox->currentIndex();
     if(m_iIndex < m_GTNameList.count() && m_iIndex >= 0)
@@ -183,7 +186,11 @@ bool MainDlg::processGT()
             while (!file.atEnd())
             {
                 QByteArray line = file.readLine();
+
                 line = line.simplified();
+                line =line.trimmed();
+//                if(QChar(line.at(0)) == '\n')
+//                    line = line.remove(0, 1);
                 if(!QChar(line.at(0)).isDigit())    // remove \xef\xbb\xbf
                     line = line.remove(0, 3);
 
@@ -205,6 +212,7 @@ bool MainDlg::processGT()
                         return false;
                     }
                     poly = readCTWTXTLabel(QString(line));
+                     // poly = readCTWTXTE2ELabel(QString(line));
                 }
                 else if(dataType == 2)
                 {
@@ -229,10 +237,14 @@ bool MainDlg::processGT()
         return false;
 }
 
-bool MainDlg::processPred()
+bool MainDlg::processPred(bool newDir)
 {
     if(m_PredDir.length() == 0)
         return false;
+
+    if(newDir)
+        m_imgLabel->clearPredList();
+
     int dataType = m_dataTypeBox->currentIndex();
     if(m_iIndex < m_PredNameList.count() && m_iIndex >= 0)
     {
@@ -347,10 +359,13 @@ void MainDlg::onChooseImgFile()
     m_imgLabel->setImage(fileName);
     changeNum();
 
-    if(m_GTDir.length() != 0)
-        processGT();
-    if(m_PredDir.length() != 0)
-        processPred();
+    m_imgLabel->clearGTList();
+    m_imgLabel->clearPredList();
+
+//    if(m_GTDir.length() != 0)
+//        processGT(false);
+//    if(m_PredDir.length() != 0)
+//        processPred(false);
 
     m_imgLabel->update();
 }
@@ -373,7 +388,7 @@ void MainDlg::onChooseGTFile()
     }
     ListSort(1);
 
-    processGT();
+    processGT(true);
     m_imgLabel->update();
 }
 
@@ -395,7 +410,7 @@ void MainDlg::onChoosePredFile()
     }
     ListSort(2);
 
-    processPred();
+    processPred(true);
     m_imgLabel->update();
 }
 
@@ -480,11 +495,11 @@ void MainDlg::onUp()
 
             if(m_bShowGT)
             {
-                processGT();
+                processGT(false);
             }
             if(m_bShowPred)
             {
-                processPred();
+                processPred(false);
             }
 
             return;
@@ -523,11 +538,11 @@ void MainDlg::onDown()
 
             if(m_bShowGT)
             {
-                processGT();
+                processGT(false);
             }
             if(m_bShowPred)
             {
-                processPred();
+                processPred(false);
             }
 
             return;
@@ -586,10 +601,10 @@ void MainDlg::onChangePage()
 
     if(m_bShowGT)
     {
-        processGT();
+        processGT(false);
     }
     if(m_bShowPred)
     {
-        processPred();
+        processPred(false);
     }
 }

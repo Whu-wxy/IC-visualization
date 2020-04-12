@@ -68,6 +68,7 @@ void ImgWidget::addPolygon(QPolygon poly, bool bGT)
 
 void ImgWidget::calInterPoly()
 {
+    m_GTInterList.clear();
     for(int i=0; i<m_GTList.count(); i++)
     {
         QPolygon poly1 = m_GTList.at(i);

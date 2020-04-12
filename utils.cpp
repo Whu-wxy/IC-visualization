@@ -34,7 +34,6 @@ void    countInterSection(QString GTDir, bool filtInvalid)
     if(dir.isEmpty())
         return;
 
-
     int allCount = 0;
     int labCount = 0;
     for(int i=0; i<GTNameList.count(); i++)
@@ -241,6 +240,42 @@ QPolygon readCTWTXTLabel(QString label)
     return  polygon;
 }
 
+QPolygon readCTWTXTE2ELabel(QString label)
+{
+    QStringList labelList;
+    QPolygon polygon;
+    QPoint pt;
+    int count = 0;
+
+    if(!label.contains(","))
+        return polygon;
+    labelList = label.split(",");
+
+    count = labelList.count();
+    qDebug()<<count;
+
+    if(labelList.count() > 32)
+        count -= 1;
+
+//    int minX = labelList.at(0).toInt();
+//    int minY = labelList.at(1).toInt();
+    for(int i=0; i<count; i++)
+    {
+        if(i % 2 == 0)
+        {
+            pt.setX(labelList.at(i).toInt());
+        }
+        else if(i % 2 == 1)
+        {
+            pt.setY(labelList.at(i).toInt());
+            polygon.append(pt);
+        }
+    }
+
+    return  polygon;
+}
+
+
 QPolygon readTotalText2ICLabel(QString label)
 {
     QStringList labelList;
@@ -269,3 +304,4 @@ QPolygon readTotalText2ICLabel(QString label)
 
     return  polygon;
 }
+

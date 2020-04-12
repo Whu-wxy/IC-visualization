@@ -35,6 +35,8 @@ public:
                         else return false; }
     bool    bPredLoad(){if(m_PredList.count()!=0) return true;
                         else return false; }
+    void    clearGTList(){m_GTList.clear(); }
+    void    clearPredList(){m_PredList.clear(); }
 
     void    saveResult(QString path, int index);
 
