@@ -206,6 +206,37 @@ QPolygon readICLabel(QString label)
 }
 
 
+QPolygon readIC17Label(QString label)
+{
+    QStringList labelList;
+    QPolygon polygon;
+    QPoint pt;
+    int count = 0;
+
+    labelList = label.split(",");
+    count = labelList.count();
+    if(count % 2 == 0)
+        count -= 2;    // label 最后是语言类别+字符
+    else
+        count -= 1;    // pred 最后加置信度
+
+    for(int i=0; i<count; i++)
+    {
+        if(i % 2 == 0)
+        {
+            pt.setX(labelList.at(i).toInt());
+        }
+        else if(i % 2 == 1)
+        {
+            pt.setY(labelList.at(i).toInt());
+            polygon.append(pt);
+        }
+    }
+
+    return  polygon;
+}
+
+
 QPolygon readCTWTXTLabel(QString label)
 {
     QStringList labelList;
@@ -257,8 +288,8 @@ QPolygon readCTWTXTE2ELabel(QString label)
     if(labelList.count() > 32)
         count -= 1;
 
-//    int minX = labelList.at(0).toInt();
-//    int minY = labelList.at(1).toInt();
+    //    int minX = labelList.at(0).toInt();
+    //    int minY = labelList.at(1).toInt();
     for(int i=0; i<count; i++)
     {
         if(i % 2 == 0)

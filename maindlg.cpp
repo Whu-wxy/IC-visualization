@@ -45,6 +45,7 @@ void MainDlg::setupUI()
     m_dataTypeBox->addItem("IC15/13");
     m_dataTypeBox->addItem("CTW");
     m_dataTypeBox->addItem("TotalText");
+    m_dataTypeBox->addItem("IC17MLT");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
@@ -218,6 +219,10 @@ bool MainDlg::processGT(bool newDir)
                 {
                     poly = readTotalText2ICLabel(QString(line));
                 }
+                else if(dataType == 3)
+                {
+                    poly = readIC17Label(QString(line));
+                }
 
                 if(line.endsWith("###") || line.endsWith("\"###\""))
                     m_imgLabel->addFiltGTIndex(i);
@@ -279,6 +284,10 @@ bool MainDlg::processPred(bool newDir)
                 else if(dataType == 2)
                 {
                     poly = readTotalText2ICLabel(QString(line));
+                }
+                else if(dataType == 3)
+                {
+                    poly = readIC17Label(QString(line));
                 }
 
                 m_imgLabel->addPolygon(poly, false);
