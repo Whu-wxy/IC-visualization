@@ -18,7 +18,7 @@ bool sortFileName(QString s1, QString s2)
     return s1.toInt() < s2.toInt();
 }
 
-void    countInterSection(QString GTDir, bool filtInvalid)
+void    countInterSection(QString GTDir, bool filtInvalid, DATATYPE datatype)
 {
     QDir dir(GTDir);
     if(!dir.exists())
@@ -53,10 +53,18 @@ void    countInterSection(QString GTDir, bool filtInvalid)
                     line = line.remove(0, 3);
 
                 if(filtInvalid)
-                    if(line.endsWith("###"))
+                    if(line.endsWith("#"))
                         continue;
 
-                QPolygon poly = readICLabel(QString(line));
+                QPolygon poly;
+                if(datatype==IC13 || datatype==IC15)
+                    poly = readICLabel(QString(line));
+                else if(datatype==CTW)
+                    poly = readCTWTXTLabel(QString(line));
+                else if(datatype==TOTAL)
+                    poly = readTotalText2ICLabel(QString(line));
+                else if(datatype==IC17)
+                    poly = readIC17Label(QString(line));
                 polyList.append(poly);
             }
             file.close();
@@ -79,7 +87,7 @@ void    countInterSection(QString GTDir, bool filtInvalid)
             }
         }
         //
-        //   qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
+           qDebug()<<GTNameList.at(i)<<":"<<count<<"/"<<polyList.count();
         labCount = polyList.count() + labCount;
         allCount = allCount+count;
     }
@@ -120,7 +128,7 @@ void    countVertival(QString GTDir, bool filtInvalid)
                     line = line.remove(0, 3);
 
                 if(filtInvalid)
-                    if(line.endsWith("###"))
+                    if(line.endsWith("#"))
                         continue;
 
                 QPolygon poly = readICLabel(QString(line));
@@ -283,7 +291,6 @@ QPolygon readCTWTXTE2ELabel(QString label)
     labelList = label.split(",");
 
     count = labelList.count();
-    qDebug()<<count;
 
     if(labelList.count() > 32)
         count -= 1;

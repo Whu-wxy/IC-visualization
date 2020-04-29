@@ -9,7 +9,9 @@
 #include <QDebug>
 #include <math.h>
 
-void    countInterSection(QString GTDir, bool filtInvalid);   //统计有交集框的数量
+enum DATATYPE{IC13, IC15, IC17, CTW, TOTAL};
+
+void    countInterSection(QString GTDir, bool filtInvalid, DATATYPE datatype=IC15);   //统计有交集框的数量
 
 void    countVertival(QString GTDir, bool filtInvalid);   //统计竖直文本数量
 

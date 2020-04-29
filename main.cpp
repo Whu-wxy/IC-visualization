@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     w.show();
 
     //
-    //countInterSection("", false);
+    //countInterSection("F:\\zzxs\\Experiments\\dl-data\\TotalText\\test\\gt", false, TOTAL);
     //
     //countVertival("F:\\zzxs\\Experiments\\dl-data\\ICDAR\\ICDAR2015\\test\\gt", false);
 

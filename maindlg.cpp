@@ -44,6 +44,7 @@ void MainDlg::setupUI()
     m_dataTypeBox = new QComboBox(this);
     m_dataTypeBox->addItem("IC15/13");
     m_dataTypeBox->addItem("CTW");
+    m_dataTypeBox->addItem("CTW_e2e");
     m_dataTypeBox->addItem("TotalText");
     m_dataTypeBox->addItem("IC17MLT");
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
@@ -217,9 +218,18 @@ bool MainDlg::processGT(bool newDir)
                 }
                 else if(dataType == 2)
                 {
-                    poly = readTotalText2ICLabel(QString(line));
+                    if(line.count(",")<10)
+                    {
+                        QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
+                        return false;
+                    }
+                    poly = readCTWTXTE2ELabel(QString(line));
                 }
                 else if(dataType == 3)
+                {
+                    poly = readTotalText2ICLabel(QString(line));
+                }
+                else if(dataType == 4)
                 {
                     poly = readIC17Label(QString(line));
                 }
@@ -283,9 +293,18 @@ bool MainDlg::processPred(bool newDir)
                 }
                 else if(dataType == 2)
                 {
-                    poly = readTotalText2ICLabel(QString(line));
+                    if(line.count(",")<10)
+                    {
+                        QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
+                        return false;
+                    }
+                    poly = readCTWTXTE2ELabel(QString(line));
                 }
                 else if(dataType == 3)
+                {
+                    poly = readTotalText2ICLabel(QString(line));
+                }
+                else if(dataType == 4)
                 {
                     poly = readIC17Label(QString(line));
                 }
