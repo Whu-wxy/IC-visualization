@@ -75,7 +75,7 @@ void ImgWidget::calInterPoly()
         for(int j=i+1; j<m_GTList.count(); j++)
         {
             QPolygon poly2 = m_GTList.at(j);
-            if(poly1.intersects(poly2))
+            if(poly1.intersected(poly2).count()!=0)     //intersects
                 m_GTInterList.append(poly1.intersected(poly2));
         }
     }

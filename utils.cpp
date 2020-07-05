@@ -53,8 +53,12 @@ void    countInterSection(QString GTDir, bool filtInvalid, DATATYPE datatype)
                     line = line.remove(0, 3);
 
                 if(filtInvalid)
-                    if(line.endsWith("#"))
+                {
+                    if(datatype==IC15 && line.endsWith("###"))
                         continue;
+                    else if(line.endsWith("#"))
+                        continue;
+                }
 
                 QPolygon poly;
                 if(datatype==IC13 || datatype==IC15)
@@ -79,7 +83,7 @@ void    countInterSection(QString GTDir, bool filtInvalid, DATATYPE datatype)
                 if(k == j)
                     continue;
                 QPolygon poly2 = polyList.at(k);
-                if(poly1.intersects(poly2))
+                if(poly1.intersected(poly2).count()!=0)   //intersects
                 {
                     count++;
                     break;
