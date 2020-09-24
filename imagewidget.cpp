@@ -108,7 +108,7 @@ void ImgWidget::saveResult(QString path, int index)
 
     path = path + QDir::separator() + "save_" + QString::number(index) + ".jpg";
 
-    basemap->save(path, "jpg");
+    basemap->save(path, "jpg", 100);
 }
 
 void ImgWidget::paintEvent(QPaintEvent *)
