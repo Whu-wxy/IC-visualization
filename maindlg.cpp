@@ -47,6 +47,8 @@ void MainDlg::setupUI()
     m_dataTypeBox->addItem("CTW_e2e");
     m_dataTypeBox->addItem("TotalText");
     m_dataTypeBox->addItem("IC17MLT");
+    m_dataTypeBox->addItem("ReCTS");
+
     m_ChooseGTDirBtn = new QPushButton("选择GT文件夹");
     m_ChoosePredDirBtn = new QPushButton("选择Pred文件夹");
     m_ShowGTBox = new QCheckBox("显示GT", this);
@@ -184,61 +186,73 @@ bool MainDlg::processGT(bool newDir)
         QFile file(m_GTDir+QDir::separator()+m_GTNameList.at(m_iIndex));
         if(file.open(QIODevice::ReadOnly))
         {
-            int i=0;
-            while (!file.atEnd())
+            if(dataType == 5)
             {
-                QByteArray line = file.readLine();
-
-                line = line.simplified();
-                line =line.trimmed();
-//                if(QChar(line.at(0)) == '\n')
-//                    line = line.remove(0, 1);
-                if(!QChar(line.at(0)).isDigit())    // remove \xef\xbb\xbf
-                    line = line.remove(0, 3);
-
-                QPolygon poly;
-                if(dataType == 0)
+                QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll());
+                QList<int> filtGtIdx;
+                QList<QPolygon> polys = readReCTSLabel(jsonDoc.object(), filtGtIdx);
+                m_imgLabel->addPolygon(polys, true);
+                m_imgLabel->addFiltGTIndex(filtGtIdx);
+            }
+            else
+            {
+                int i=0;
+                while (!file.atEnd())
                 {
-                    if(line.count(",")>10)
+                    QByteArray line = file.readLine();
+
+                    line = line.simplified();
+                    line =line.trimmed();
+                    //                if(QChar(line.at(0)) == '\n')
+                    //                    line = line.remove(0, 1);
+                    if(!QChar(line.at(0)).isDigit())    // remove \xef\xbb\xbf
+                        line = line.remove(0, 3);
+
+                    QPolygon poly;
+                    if(dataType == 0)
                     {
-                        QMessageBox::critical(this, "读取GT标签", "请选择正确的IC15/13的GT路径");
-                        return false;
+                        if(line.count(",")>10)
+                        {
+                            QMessageBox::critical(this, "读取GT标签", "请选择正确的IC15/13的GT路径");
+                            return false;
+                        }
+                        poly = readICLabel(QString(line));
                     }
-                    poly = readICLabel(QString(line));
-                }
-                else if(dataType == 1)
-                {
-                    if(line.count(",")<10)
+                    else if(dataType == 1)
                     {
-                        QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
-                        return false;
+                        if(line.count(",")<10)
+                        {
+                            QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
+                            return false;
+                        }
+                        poly = readCTWTXTLabel(QString(line));
+                        // poly = readCTWTXTE2ELabel(QString(line));
                     }
-                    poly = readCTWTXTLabel(QString(line));
-                     // poly = readCTWTXTE2ELabel(QString(line));
-                }
-                else if(dataType == 2)
-                {
-                    if(line.count(",")<10)
+                    else if(dataType == 2)
                     {
-                        QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
-                        return false;
+                        if(line.count(",")<10)
+                        {
+                            QMessageBox::critical(this, "读取GT标签", "请选择正确的CTW的GT路径");
+                            return false;
+                        }
+                        poly = readCTWTXTE2ELabel(QString(line));
                     }
-                    poly = readCTWTXTE2ELabel(QString(line));
-                }
-                else if(dataType == 3)
-                {
-                    poly = readTotalText2ICLabel(QString(line));
-                }
-                else if(dataType == 4)
-                {
-                    poly = readIC17Label(QString(line));
+                    else if(dataType == 3)
+                    {
+                        poly = readTotalText2ICLabel(QString(line));
+                    }
+                    else if(dataType == 4)
+                    {
+                        poly = readIC17Label(QString(line));
+                    }
+
+                    if(line.endsWith("###") || line.endsWith("\"###\""))
+                        m_imgLabel->addFiltGTIndex(i);
+
+                    m_imgLabel->addPolygon(poly, true);
+                    i++;
                 }
 
-                if(line.endsWith("###") || line.endsWith("\"###\""))
-                    m_imgLabel->addFiltGTIndex(i);
-
-                m_imgLabel->addPolygon(poly, true);
-                i++;
             }
             file.close();
 
@@ -273,7 +287,7 @@ bool MainDlg::processPred(bool newDir)
                 if(!QChar(line.at(0)).isDigit())
                     line = line.remove(0, 3);
                 QPolygon poly;
-                if(dataType == 0)
+                if(dataType == 0 || dataType == 5)
                 {
                     if(line.count(",")>10)
                     {
@@ -336,11 +350,19 @@ bool caseInsensitiveLessThan(QString s1, QString s2)
         s1.remove(".jpg");
     else if(s1.endsWith(".txt"))
         s1.remove(".txt");
+    else if(s1.endsWith(".JPG"))
+        s1.remove(".JPG");
+    else if(s1.endsWith(".png"))
+        s1.remove(".png");
     s2 = s2List.at(s2List.count()-1);
     if(s2.endsWith(".jpg"))
         s2.remove(".jpg");
     else if(s2.endsWith(".txt"))
         s2.remove(".txt");
+    else if(s2.endsWith(".JPG"))
+        s2.remove(".JPG");
+    else if(s2.endsWith(".png"))
+        s2.remove(".png");
 
     return s1.toInt() < s2.toInt();
 }
@@ -366,14 +388,18 @@ void MainDlg::ListSort(int index)
 void MainDlg::onChooseImgFile()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("选择图片"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
+                                                    tr("选择图片"), "/", tr("Image Files (*.png *.jpg *.bmp  *.JPG)"));
+
+    if(fileName.length() == 0)
+        return;
 
     QFileInfo info(fileName);
     m_curFileName = info.fileName();
     m_imgFileDir.setPath(info.path());
     m_fileNameList.clear();
     m_fileNameList = m_imgFileDir.entryList(QDir::Files, QDir::Name);
-    ListSort(0);
+    if(m_dataTypeBox->currentIndex() != 5 && m_dataTypeBox->currentIndex() != 3)
+        ListSort(0);
 
     for(int i=0; i<m_fileNameList.count(); i++)
     {
@@ -390,10 +416,10 @@ void MainDlg::onChooseImgFile()
     m_imgLabel->clearGTList();
     m_imgLabel->clearPredList();
 
-//    if(m_GTDir.length() != 0)
-//        processGT(false);
-//    if(m_PredDir.length() != 0)
-//        processPred(false);
+    //    if(m_GTDir.length() != 0)
+    //        processGT(false);
+    //    if(m_PredDir.length() != 0)
+    //        processPred(false);
 
     m_imgLabel->update();
 }
@@ -407,14 +433,16 @@ void MainDlg::onChooseGTFile()
     QDir dir(m_GTDir);
     m_GTNameList.clear();
     QStringList nameFilters;
-    nameFilters<<"*.txt";
+    nameFilters<<"*.txt"<<"*.json";
     m_GTNameList = dir.entryList(nameFilters, QDir::Files, QDir::Name);
     if(m_GTNameList.count() == 0)
     {
         QMessageBox::critical(this, "选择GT路径", "请选择正确的GT路径");
         return;
     }
-    ListSort(1);
+
+    if(m_dataTypeBox->currentIndex() != 5 && m_dataTypeBox->currentIndex() != 3)
+        ListSort(1);
 
     processGT(true);
     m_imgLabel->update();

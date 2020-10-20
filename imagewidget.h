@@ -28,9 +28,11 @@ public:
 
     void    setImage(QString filePath);
     void    addPolygon(QPolygon, bool bGT);
+    void    addPolygon(QList<QPolygon>, bool bGT);
     void    calInterPoly();
     void    showInterPoly(int);
     void    addFiltGTIndex(int index);
+    void    addFiltGTIndex(QList<int> indexList);
     bool    bGTLoad(){if(m_GTList.count()!=0) return true;
                         else return false; }
     bool    bPredLoad(){if(m_PredList.count()!=0) return true;

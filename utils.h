@@ -8,6 +8,8 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <math.h>
+#include <QJsonObject>
+#include <QJsonArray>
 
 enum DATATYPE{IC13, IC15, IC17, CTW, TOTAL};
 
@@ -22,5 +24,7 @@ QPolygon readCTWTXTLabel(QString label);  //CTW-Recognition Annotation-14个点
 QPolygon readCTWTXTE2ELabel(QString label);  //CTW-Recognition Annotation-14个点
 
 QPolygon readTotalText2ICLabel(QString label);   //读取Total-Text转成IC15形式的标签
+
+QList<QPolygon> readReCTSLabel(QJsonObject json, QList<int>& filtGtIdx);
 
 #endif // UTILS_H

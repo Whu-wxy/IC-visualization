@@ -66,6 +66,18 @@ void ImgWidget::addPolygon(QPolygon poly, bool bGT)
     }
 }
 
+void ImgWidget::addPolygon(QList<QPolygon> polys, bool bGT)
+{
+    if(bGT)
+    {
+        m_GTList.append(polys);
+    }
+    else
+    {
+        m_PredList.append(polys);
+    }
+}
+
 void ImgWidget::calInterPoly()
 {
     m_GTInterList.clear();
@@ -95,11 +107,15 @@ void ImgWidget::showInterPoly(int state)
     }
 }
 
+void ImgWidget::addFiltGTIndex(QList<int> indexList)
+{
+    m_filtGTList.append(indexList);
+}
+
 void ImgWidget::addFiltGTIndex(int index)
 {
     m_filtGTList.append(index);
 }
-
 
 void ImgWidget::saveResult(QString path, int index)
 {

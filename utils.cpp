@@ -347,3 +347,34 @@ QPolygon readTotalText2ICLabel(QString label)
     return  polygon;
 }
 
+QList<QPolygon> readReCTSLabel(QJsonObject json, QList<int>& filtGtIdx)
+{
+    QList<QPolygon> polys;
+    QPoint pt;
+
+    QJsonArray chars = json.value("chars").toArray();
+    for(int i=0; i<chars.count(); i++)
+    {
+        QPolygon poly;
+        QJsonObject charMeta = chars.at(i).toObject();
+        QJsonArray points = charMeta.value("points").toArray();
+        int bIgnore = charMeta.value("ignore").toInt();
+        if(bIgnore != 0)
+            filtGtIdx.append(i);
+
+        for(int j=0; j<points.count(); j++)
+        {
+            if(j % 2 == 0)
+                pt.setX(points.at(j).toInt());
+            else if(j % 2 == 1)
+            {
+                pt.setY(points.at(j).toInt());
+                poly.append(pt);
+            }
+        }
+
+        polys.append(poly);
+    }
+
+    return polys;
+}
